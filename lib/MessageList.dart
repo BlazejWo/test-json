@@ -1,10 +1,15 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:test1/ButtonCompose.dart';
+import 'package:test1/MessageCompose.dart';
+import 'package:test1/MessageDetail.dart';
 import 'Message.dart';
 
 class MessageList extends StatefulWidget {
@@ -16,7 +21,9 @@ class MessageList extends StatefulWidget {
 }
 
 class _MessageListState extends State<MessageList> {
-   late Future<List<Message>> messages;
+  late List<Message> messages;
+    late Future<List<Message>> future;
+
                                                                                    // bool isLoading = true;
 
                                                                                   //  Future loadMessageList() async{
@@ -29,25 +36,34 @@ class _MessageListState extends State<MessageList> {
  // }
 
   void initState() {
-                                                                                  // loadMessageList();
     super.initState();
-    messages = Message.browse();
+    fetch();
+
   }
+void fetch() async {
+    future = Message.browse();
+    messages = await future;
+    setState.call(() {
+
+    });
+    _MessageListState;
+}
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: <Widget>[IconButton(onPressed: (){
-          var _messages = Message.browse();
+        actions: <Widget>[IconButton(icon: Icon(Icons.refresh),
+            onPressed: () async {
+          var _messages = await Message.browse();
           setState(() {
             messages = _messages;
           });
         },
-            icon: Icon(Icons.refresh))],
+            )],
       ),
       body: FutureBuilder (
-        future: messages,
+        future: future,
         builder: (BuildContext context, AsyncSnapshot snapshot){
           switch (snapshot.connectionState){
             case ConnectionState.none:
@@ -67,14 +83,21 @@ class _MessageListState extends State<MessageList> {
 
                         leading: CircleAvatar(backgroundColor: Colors.cyan,
                             child: Text('$index')),
-                      );
+
+                      onTap:(){
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (BuildContext context) => MessageDetail(message.subject, message.body),
+                            ),
+                        );
+                      },);
                     },
                   );
 
           }
 
         },
-      )
+      ),
+floatingActionButton: ButtonCompose(messages),
 
       //isLoading?Center(child: RefreshProgressIndicator()):
       // ListView.separated(
