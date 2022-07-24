@@ -12,6 +12,7 @@ import 'package:test1/ButtonCompose.dart';
 import 'package:test1/MessageCompose.dart';
 import 'package:test1/MessageDetail.dart';
 import 'Message.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class MessageList extends StatefulWidget {
   final String title;
@@ -22,9 +23,9 @@ class MessageList extends StatefulWidget {
 }
 
 class _MessageListState extends State<MessageList> {
-  late List<Message> messages;
-    late Future<List<Message>> future;
 
+    late Future<List<Message>> future;
+    late List<Message> messages;
                                                                                    // bool isLoading = true;
 
                                                                                   //  Future loadMessageList() async{
@@ -44,7 +45,6 @@ class _MessageListState extends State<MessageList> {
 void fetch() async {
     future = Message.browse();
     messages = await future;
-    messages = messages;
     setState.call(() {
 
     });
@@ -60,10 +60,11 @@ void fetch() async {
             onPressed: () async {
           var _messages = await Message.browse();
           setState(() {
-            messages = _messages;
+            future=Message.browse();
           });
         },
-            )],
+            ),
+        ],
       ),
       drawer: Drawer(  //trzy 3 kreski menu
         child: Column(
@@ -137,24 +138,61 @@ void fetch() async {
               return Center(child: CircularProgressIndicator());
             case ConnectionState.done:
               var messages = snapshot.data;
+              
               return ListView.separated(
                     itemCount: messages.length,
                     separatorBuilder: (context, index) => Divider(),
                     itemBuilder: (BuildContext context, int index ) {
                       Message message = messages[index];
-                      return ListTile(
-                        title: Text(message.subject),
-                        subtitle: Text(message.body),
+                      return Slidable(
+                        actionPane: SlidableStrechActionPane(),
+                       //  delegate: new SlidableBehindDelegate(),
+                        actionExtentRatio: 0.25,
+                        actions: <Widget>[
+                          IconSlideAction(
+                            caption: 'Archive',
+                            color: Colors.blue,
+                            icon: Icons.archive,
+                            onTap: ()  {},
+                          ),
+                          IconSlideAction(
+                            caption: 'Share',
+                            color: Colors.indigo,
+                            icon: Icons.share,
+                            onTap: ()  {},
+                          ),
+                        ],
 
-                        leading: CircleAvatar(backgroundColor: Colors.cyan,
-                            child: Text('$index')),
+                        secondaryActions: <Widget>[
+                          IconSlideAction(
+                            caption: 'More',
+                            color: Colors.black45,
+                            icon: Icons.more_horiz,
+                            onTap: () {},
+                          ),
+                          IconSlideAction(
+                            caption: 'Delete',
+                            color: Colors.red,
+                            icon: Icons.delete,
+                            onTap: ()  {},
+                          ),
+                        ],
 
-                      onTap:(){
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (BuildContext context) => MessageDetail(message.subject, message.body),
-                            ),
-                        );
-                      },);
+                        key: ObjectKey(message),
+                        child: ListTile(
+                          title: Text(message.subject),
+                          subtitle: Text(message.body),
+
+                          leading: CircleAvatar(backgroundColor: Colors.cyan,
+                              child: Text('$index')),
+
+                        onTap:(){
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (BuildContext context) => MessageDetail(message.subject, message.body),
+                              ),
+                          );
+                        },),
+                      );
                     },
                   );
 
